@@ -5,34 +5,49 @@ import java.util.ResourceBundle;
 
 public class LanguageResource {
 	private final static String fileName = "com/ur/urcap/examples/localization/impl/i18n/languages/languages";
+	private final Locale locale;
+	private final Locale programmingLanguageLocale;
 	private ResourceBundle resource;
-	private final String localLanguage;
-	private final String localProgrammingLanguage;
 
-	public LanguageResource(Locale locale, String programmingLanguage) {
-		locale = locale.equals(LanguagePack.rootLanguageLocale) ? Locale.ROOT : locale;
-		resource = ResourceBundle.getBundle(fileName, locale, new UTF8Control());
-		localLanguage = (locale == Locale.ROOT) ? LanguagePack.rootLanguageLocale.getLanguage() : locale.getLanguage();
-		this.localProgrammingLanguage = programmingLanguage.isEmpty() ? LanguagePack.rootLanguageLocale.getLanguage() : programmingLanguage;
+	public LanguageResource(Locale locale, Locale programmingLanguageLocale) {
+		this.locale = locale;
+		Locale resourceLocale = locale.equals(LanguagePack.rootLanguageLocale) ? Locale.ROOT : locale;
+		resource = ResourceBundle.getBundle(fileName, resourceLocale, new UTF8Control());
+		this.programmingLanguageLocale = programmingLanguageLocale;
 	}
 
 	public String localeLanguage() {
-		return getStringByKey(localLanguage);
+		return getLanguage(this.locale);
 	}
 
 	public String localeProgrammingLanguage() {
-		return getStringByKey(localProgrammingLanguage);
+		return getLanguage(this.programmingLanguageLocale);
 	}
 
 	public String language(String language) {
-		return getStringByKey(language);
+		String lang =  getStringByKey(language);
+		if(lang == null ) {
+			lang =  "!" + language;
+		}
+		return lang;
 	}
 
 	private String getStringByKey(String key) {
 		try {
 			return resource.getString(key);
 		} catch (Exception e) {
-			return "!"+key;
+			return null;
 		}
+	}
+
+	private String getLanguage(Locale languageLocale) {
+		String language = getStringByKey(languageLocale.getLanguage() + "_" + languageLocale.getCountry());
+		if (language == null) {
+			language = getStringByKey(languageLocale.getLanguage());
+			if (language == null) {
+				language = "!" + languageLocale.getLanguage();
+			}
+		}
+		return language;
 	}
 }

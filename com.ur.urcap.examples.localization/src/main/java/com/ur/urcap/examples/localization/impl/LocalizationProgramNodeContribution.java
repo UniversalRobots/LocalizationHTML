@@ -4,14 +4,17 @@ import com.ur.urcap.api.contribution.ProgramNodeContribution;
 import com.ur.urcap.api.domain.URCapAPI;
 import com.ur.urcap.api.domain.data.DataModel;
 import com.ur.urcap.api.domain.script.ScriptWriter;
-import com.ur.urcap.api.domain.system.localization.Localization;
 import com.ur.urcap.api.domain.system.localization.UnitType;
 import com.ur.urcap.api.domain.value.simple.Length;
 import com.ur.urcap.api.domain.value.simple.SimpleValueFactory;
 import com.ur.urcap.api.ui.annotation.Input;
 import com.ur.urcap.api.ui.annotation.Label;
 import com.ur.urcap.api.ui.annotation.Select;
-import com.ur.urcap.api.ui.component.*;
+import com.ur.urcap.api.ui.component.InputEvent;
+import com.ur.urcap.api.ui.component.InputTextField;
+import com.ur.urcap.api.ui.component.LabelComponent;
+import com.ur.urcap.api.ui.component.SelectDropDownList;
+import com.ur.urcap.api.ui.component.SelectEvent;
 import com.ur.urcap.examples.localization.i18n.CommandNamesResource;
 import com.ur.urcap.examples.localization.i18n.LanguagePack;
 import com.ur.urcap.examples.localization.i18n.TextResource;
@@ -23,7 +26,6 @@ import java.util.List;
 public class LocalizationProgramNodeContribution implements ProgramNodeContribution {
 	private static final String HEIGHT = "height";
 	private static final String UNIT = "unit";
-	private static final List<String> languagesNotSupportedInPopups = Arrays.asList("ru","jp","ko","zh");
 
 	private final UnitType systemOfMeasurement;
 	private final SimpleValueFactory valueFactory;
@@ -146,7 +148,7 @@ public class LocalizationProgramNodeContribution implements ProgramNodeContribut
 
 	@Override
 	public void generateScript(ScriptWriter writer) {
-		writer.appendLine("popup(\"" + generatePopupMessage() + "\")");
+		writer.appendLine("popup(\"" + createMessage() + "\")");
 	}
 
 	private Length.Unit getTargetUnit() {
@@ -178,44 +180,12 @@ public class LocalizationProgramNodeContribution implements ProgramNodeContribut
 		return getTextResource().language() + ": " + LanguagePack.getInstance().getLanguageResource().localeLanguage();
 	}
 
-	private String createLanguageString(String lang) {
-		return getTextResource().language() + ": " + LanguagePack.getInstance().getLanguageResource().language(lang);
-	}
-
 	private String createProgrammingLanguageString() {
 		return getTextResource().programmingLanguage() + ": " + LanguagePack.getInstance().getLanguageResource().localeProgrammingLanguage();
 	}
 
-	private String createProgrammingLanguageString(String lang) {
-		return getTextResource().programmingLanguage() + ": " + LanguagePack.getInstance().getLanguageResource().language(lang);
-	}
-
 	private Length.Unit getSystemLengthUnit() {
 		return systemOfMeasurement == UnitType.METRIC ? Length.Unit.MM : Length.Unit.IN;
-	}
-
-	private String generatePopupMessage() {
-		String message;
-		final Localization systemLocalization = LanguagePack.getInstance().getLocalization();
-		if (languagesNotSupportedInPopups.contains(systemLocalization.getLocale().getLanguage()) ) {
-			message = createMessageForUnsupportedLanguage(systemLocalization);
-		} else {
-			message = createMessage();
-		}
-		return message;
-	}
-
-	private String createMessageForUnsupportedLanguage(Localization systemLocalization) {
-		String systemLanguage = systemLocalization.getLocale().getLanguage();
-		String systemProgrammingLanguage = systemLocalization.getLocaleForProgrammingLanguage().getLanguage();
-		LanguagePack.getInstance().setEnglishLocalization();
-		String message = getTextResource().notSupported()  + "<br/>" +
-				createLanguageString(systemLanguage) + "<br/>" +
-				createProgrammingLanguageString(systemProgrammingLanguage) + "<br/>" +
-				createSystemOfMeasurementString() + "<br/>" +
-				createConvertedValueString();
-		LanguagePack.getInstance().setLocalization(systemLocalization);
-		return message;
 	}
 
 	private String createMessage() {
